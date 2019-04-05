@@ -25,7 +25,7 @@ void Bullet::OverlapTest() {
 //TODO draw to backBuffer
 int Bullet::Onprint(HDC hdc, Player * player)
 {
-	printf("DLLM\n");
+	
 	y -= velcoity;
 	if (y <= 0) {
 		active = false;
