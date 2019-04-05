@@ -55,11 +55,7 @@ void Player::Onprint(float Mx, float My, HDC hdc)
 
 	SelectObject(hdc, GetStockObject(GRAY_BRUSH));
 	Rectangle(hdc, x , y , x + playerSize, y + playerSize);
-	/*for (Bullet * bullet : FiredBullet)
-	{
-		if (!bullet) { break; }
-		bullet->Onprint(ps, this);
-	}*/
+
 
 	for (std::vector<Bullet*>::iterator it = FiredBullet.begin(); it != FiredBullet.end(); it++)
 	{	
@@ -78,7 +74,7 @@ void Player::Onprint(float Mx, float My, HDC hdc)
 
 	ModX = 0;
 	ModY = 0;
-	//printf("PlayerPaintfunction current x is %d and current y is %d\n" , x,y);
+	
 
 }
 
