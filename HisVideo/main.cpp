@@ -12,6 +12,7 @@ const wchar_t* szWindowClass = L"MyWindow";
 //top left bottom left etc
 bool OverlapTest(int left_REC1,int left_REC2,int right_REC1,int right_REC2,int top_REC1,int top_REC2,int bot_REC1,int bot_REC2)
 {
+
 	return  
 		left_REC1 <= right_REC2 &&
 		right_REC1 >= left_REC2 &&
@@ -45,49 +46,37 @@ public :
 		y = 0;
 	}
 
-	bool active = false;
-
 	void init(int x_, int y_, bool active_) {
 		x = x_;
 		y = y_;
 		active = active_;
 	}
 
-	void setX(int x_) {
-		x = x_;
-	}
+	void setX(int x_) {	x = x_;	}
+	void setY(int y_) {y = y_;}
+	void setActive(bool Active) { active = Active; }
+	
 
-	void setY(int y_) {
-		y = y_;
-	}
-
-	int getX()const {
-		return x;
-	}
-
-	int getY()const {
-		return y;
-	}
+	int getX()const {return x;}
+	int getY()const { return y; }
+	bool getActive()const { return active; }
 
 private:
 	int x;
 	int y;
+	int m_width;
+	int m_height;
+
+	bool active = false;
+	
 };
 
 class BitMap {
 public:
-	BitMap()
-	{
+	BitMap(){}
+	~BitMap(){destroy();}
+	BitMap(int resourceID){}
 
-	}
-	~BitMap()
-	{
-		destroy();
-	}
-	BitMap(int resourceID)
-	{
-
-	}
 	void  create(int width, int height) {
 		//CreateBitmap(width, height, 1, 32);
 	}
@@ -134,6 +123,9 @@ public:
 		}
 	}
 
+	int getWidth() const{	return width;	}
+	int getHeight() const{	return height;	}
+
 
 private:
 	HBITMAP m_bmp = nullptr;
@@ -142,7 +134,6 @@ private:
 	int resourceID;
 };
 
-BitMap bitMap;
 
 
 class EnemyController {
@@ -165,12 +156,30 @@ public:
 		}
 	}
 
+	void LoadBitMap(int resourceID)
+	{
+		m_bitmap.LoadBitMap(resourceID);
+		Bit_width = m_bitmap.getWidth();
+		Bit_height  = m_bitmap.getHeight();
+
+		printf("the width is %d and height is %d \n", Bit_width, Bit_height);
+	}
+
 	void Onpaint(HDC hdc) {
 		
-		bitMap.LoadBitMap(IDB_BITMAP1);
+		
+		int left_0;
+		int left_1;
+		int right_0;
+		int right_1;
+		int top_0;
+		int top_1;
+		int bot_0;
+		int bot_1;
+
 		for (int i =0;i<Enemies.size();i++)
 		{
-			if (Enemies[i]->active == false)
+			if (Enemies[i]->getActive() == false)
 			{
 				continue;
 			}
@@ -182,22 +191,31 @@ public:
 				}
 
 				//TODO refactor
-				bool ifHit = OverlapTest(Enemies[i]->getX(), player.FiredBullet[j]->getX(), Enemies[i]->getX() + 50, player.FiredBullet[j]->getX() + player.FiredBullet[j]->bulletSize, Enemies[i]->getY(), \
-					player.FiredBullet[j]->getY(), Enemies[i]->getY() + 36, player.FiredBullet[j]->getY() + player.FiredBullet[j]->bulletSize);
+				left_0 = Enemies[i]->getX();
+				left_1 = player.FiredBullet[j]->getX();
+
+				right_0 = left_0 + Bit_width;
+				right_1 = left_1 + player.FiredBullet[j]->bulletSize;
+
+				top_0 = Enemies[i]->getY();
+				top_1 = player.FiredBullet[j]->getY();
+
+				bot_0 = top_0 + Bit_height;
+				bot_1 = top_1 + player.FiredBullet[j]->bulletSize;
+
+				bool ifHit = OverlapTest(left_0, left_1, right_0, right_1, top_0 , top_1, bot_0, bot_1);
 
 				if (ifHit)
 				{
 					
-					//TODO refactor
-					//player.FiredBullet[j]->active = false;
 					player.FiredBullet[j]->setActive(false);
 
-					Enemies[i]->active = false;
+					Enemies[i]->setActive(false);
 					player.setCurrentBullet(-1);
 				}
 			}
 
-			bitMap.draw(hdc, Enemies[i]->getX(), Enemies[i]->getY());
+			m_bitmap.draw(hdc, Enemies[i]->getX(), Enemies[i]->getY());
 			
 
 		}
@@ -214,6 +232,10 @@ private:
 
 	int numbersofRow = 5;
 	int numbersofColume = 9;
+
+	int Bit_width = 0;
+	int Bit_height = 0;
+	BitMap m_bitmap;
 };
 
 //TODO put other manager and logic in the loop function 
@@ -339,7 +361,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE: {
 		
 		
-		bitMap.LoadBitMap(IDB_BITMAP1);
+		eC.LoadBitMap(IDB_BITMAP1);
 		eC.create();
 		player.create(300, 690, 100);
 		
@@ -365,7 +387,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}break;
 
 	case WM_DESTROY:
-		bitMap.destroy();
+		
 		
 
 		PostQuitMessage(0);
