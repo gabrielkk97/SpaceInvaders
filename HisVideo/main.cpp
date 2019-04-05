@@ -304,9 +304,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PAINTSTRUCT ps;
 		BeginPaint(hWnd, &ps);
 
-		//eC.Onpaint(ps.hdc);      put these two lines to WM_TImer and paint them to the backBuffer
-		//player.Onprint(0,0,ps);
-		backbuffer.draw(ps.hdc, 0,0);
+		eC.Onpaint(ps.hdc);     // put these two lines to WM_TImer and paint them to the backBuffer
+		player.Onprint(0,0,ps.hdc);
+
+		//backbuffer.draw(ps.hdc, 0,0);
 	
 		EndPaint(hWnd, &ps);
 		
@@ -392,8 +393,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//paint things to the backbuffer
 	
 
-		eC.Onpaint(backbuffer.getHDC());     // put these two lines to WM_TImer and paint them to the backBuffer
-		player.Onprint(0,0,backbuffer.getHDC());
+		//eC.Onpaint(backbuffer.getHDC());     // put these two lines to WM_TImer and paint them to the backBuffer
+		//player.Onprint(0,0,backbuffer.getHDC());
 		
 		//printf("player 's position is %d, and %d \n", player.x, player.y);
 		InvalidateRect(hWnd, nullptr, true);
