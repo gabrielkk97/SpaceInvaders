@@ -227,7 +227,22 @@ public:
 			return;
 		}
 		
+
 		BitBlt(hdc, x, y, m_width, m_height, m_HDC, 0, 0, SRCCOPY);
+
+		HBITMAP newBitMap = CreateCompatibleBitmap(m_HDC, m_width, m_height);
+		SelectObject(m_HDC, newBitMap);
+		DeleteObject(m_Bitmap);
+		RECT rc;
+		rc.left = 0;
+		rc.right = m_width;
+		rc.top = 0;
+		rc.bottom = m_height;
+
+		auto brush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+
+		FillRect(m_HDC, &rc, brush);
+		m_Bitmap = newBitMap;
 	}
 	void destroy() {
 		if (m_Bitmap)
@@ -278,7 +293,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		backbuffer.create(dc, rc.right - rc.left, rc.bottom - rc.top);
 
 		//The main game loop and trying to go for 60fps
-		SetTimer(hWnd, NULL, 17, nullptr);
+		SetTimer(hWnd, NULL, 40, nullptr);
+
+		ReleaseDC(hWnd,dc);
 	
 	}
 	case WM_PAINT: {
