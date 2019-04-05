@@ -7,6 +7,7 @@ void Player::create(int x_, int y_, int hp_)
 	x = x_;
 	y = y_;
 	hp = hp_;
+
 	FiredBullet.resize(MaxBullet);
 	for (std::vector<Bullet*>::iterator it = FiredBullet.begin(); it != FiredBullet.end();it++) {
 		*it = new Bullet(0,0);
@@ -15,11 +16,13 @@ void Player::create(int x_, int y_, int hp_)
 
 void Player::Fire()
 {	
-	printf("Entered\n");
+	
 
 	if (currentBullet >= MaxBullet) return;
 	else {
-		FiredBullet[currentNode]->initialize(x+playerSize/2-Bullet::bulletSize/2, y + 10);
+
+		//set the position of the bullet to the middle of the player 
+		FiredBullet[currentNode]->initialize(x+playerSize/2-Bullet::bulletSize/2, y -10);
 		FiredBullet[currentNode]->active = true;
 
 		currentBullet++;
@@ -72,6 +75,17 @@ void Player::Onprint(float Mx, float My, HDC hdc)
 		}
 		
 	}
+
+	ModX = 0;
+	ModY = 0;
 	//printf("PlayerPaintfunction current x is %d and current y is %d\n" , x,y);
 
+}
+
+int Player::getMX() const{ return ModX; }
+int Player::getMy() const{ return ModY; }
+
+void Player::setMod(int x_, int y_) {
+	ModX = x_;
+	ModY = y_;
 }

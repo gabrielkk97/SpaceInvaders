@@ -23,6 +23,12 @@ public:
 	   //Mx and My are the change of position of the player , eg if Mx  =1 then the player is moved to the right for one pixel
 	   void Onprint(float Mx,float My, HDC hdc);
 
+	   void setMod(int x_, int y_);
+	   int getMX() const;
+	   int getMy() const;
 
-
+private:
+	int ModX = 0;
+	int ModY = 0;
+	HDC m_HDC;
 };

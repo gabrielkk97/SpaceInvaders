@@ -9,7 +9,15 @@
 const wchar_t* szWindowClass = L"MyWindow";
 
 
-
+//top left bottom left etc
+bool OverlapTest(int left_REC1,int left_REC2,int right_REC1,int right_REC2,int top_REC1,int top_REC2,int bot_REC1,int bot_REC2)
+{
+	return  
+		left_REC1 <= right_REC2 &&
+		right_REC1 >= left_REC2 &&
+		top_REC1 <= bot_REC2 &&
+		bot_REC1 >= top_REC2;
+}
 
 Player player;
 struct Color {
@@ -116,6 +124,7 @@ private:
 
 BitMap bitMap;
 
+
 class EnemyController {
 public:
 	
@@ -146,11 +155,30 @@ public:
 				continue;
 			}
 			
+			for (int j = 0; j < player.FiredBullet.size(); j++) {
+				if (!player.FiredBullet[j]->active)
+				{
+					continue;
+				}
+				bool ifHit = OverlapTest(Enemies[i]->x, player.FiredBullet[j]->x, Enemies[i]->x + 50, player.FiredBullet[j]->x + player.FiredBullet[j]->bulletSize, Enemies[i]->y, \
+					player.FiredBullet[j]->y, Enemies[i]->y + 36, player.FiredBullet[j]->y + player.FiredBullet[j]->bulletSize);
+
+				if (ifHit)
+				{
+					
+					player.FiredBullet[j]->active = false;
+					Enemies[i]->active = false;
+					player.currentBullet--;
+				}
+			}
+
 			bitMap.draw(hdc, Enemies[i]->x, Enemies[i]->y);
 			
 
 		}
 	}
+
+
 private:
 	std::vector<Enemy*>Enemies;
 	int vDistance = 80;
@@ -160,7 +188,7 @@ private:
 	int startY = 50;
 
 	int numbersofRow = 5;
-	int numbersofColume = 5;
+	int numbersofColume = 9;
 };
 
 class GameManger {
@@ -273,7 +301,7 @@ private:
 };
 
 EnemyController eC;
-BackBuffer backbuffer;
+
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -284,19 +312,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_CREATE: {
 		
+		
 		bitMap.LoadBitMap(IDB_BITMAP1);
 		eC.create();
-		RECT rc;
-		GetClientRect(hWnd, &rc);
-		auto dc = GetDC(hWnd);
-
-		backbuffer.create(dc, rc.right - rc.left, rc.bottom - rc.top);
+		player.create(300, 690, 100);
+		
 
 		//The main game loop and trying to go for 60fps
-		SetTimer(hWnd, NULL, 40, nullptr);
+		SetTimer(hWnd, NULL, 17, nullptr);
 
-		ReleaseDC(hWnd,dc);
-	
+		
 	}
 	case WM_PAINT: {
 
@@ -305,7 +330,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		BeginPaint(hWnd, &ps);
 
 		eC.Onpaint(ps.hdc);     // put these two lines to WM_TImer and paint them to the backBuffer
-		player.Onprint(0,0,ps.hdc);
+		player.Onprint(player.getMX(),player.getMy(),ps.hdc);
 
 		//backbuffer.draw(ps.hdc, 0,0);
 	
@@ -344,7 +369,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		
 
 		player.Fire();
-		printf("player y position is %d", player.y);
+		
 	
 	}break;
 
@@ -354,38 +379,46 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		//pressing W key 
 		case 0x57: {
-			PAINTSTRUCT ps;
+			/*PAINTSTRUCT ps;
 
 			BeginPaint(hWnd, &ps);
 			player.Onprint(0, -player.moveSpeed, backbuffer.getHDC());
-			EndPaint(hWnd, &ps);
+			EndPaint(hWnd, &ps);*/
+
+			player.setMod(0, -player.moveSpeed);
 		}break;
 
 		//pressing s key
 		case 0x53:{
-			PAINTSTRUCT ps;
+			/*PAINTSTRUCT ps;
 
 			BeginPaint(hWnd, &ps);
 			player.Onprint(0, player.moveSpeed, backbuffer.getHDC());
-			EndPaint(hWnd, &ps);
+			EndPaint(hWnd, &ps);*/
+
+			player.setMod(0, player.moveSpeed);
 		}break;
 
 		//pressing A key
 		case 0x41: {
-			PAINTSTRUCT ps;
+			/*PAINTSTRUCT ps;
 
 			BeginPaint(hWnd, &ps);
 			player.Onprint(-player.moveSpeed, 0, backbuffer.getHDC());
-			EndPaint(hWnd, &ps);
+			EndPaint(hWnd, &ps);*/
+			
+			player.setMod(-player.moveSpeed, 0);
 		}break;
 
 		//pressing D key
 		case 0x44: {
-			PAINTSTRUCT ps;
+			/*PAINTSTRUCT ps;
 
 			BeginPaint(hWnd, &ps);
 			player.Onprint(player.moveSpeed,0, backbuffer.getHDC());
-			EndPaint(hWnd, &ps);
+			EndPaint(hWnd, &ps);*/
+
+			player.setMod(player.moveSpeed, 0);
 		}break;
 		}
 	}break;
@@ -408,7 +441,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
 	
-	printf("Hello\n");
+	
+
 
 	//Window Class
 	WNDCLASSEX wcex;
@@ -447,7 +481,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	UpdateWindow(hwnd);
 
 	//create the player object and set the inital location 
-	player.create(300, 690, 100);
+	
 	GameManger gM = GameManger(17);
 	// Main message loop:  
 	MSG msg;
