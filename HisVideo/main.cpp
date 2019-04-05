@@ -191,6 +191,7 @@ private:
 	int numbersofColume = 9;
 };
 
+//TODO put other manager and logic in the loop function 
 class GameManger {
 public:
 	
@@ -470,7 +471,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HWND hwnd = CreateWindowEx(0,
 		szWindowClass,
 		L"MyWindow Title",
-		WS_OVERLAPPEDWINDOW&(~WS_MAXIMIZEBOX),
+		WS_OVERLAPPEDWINDOW&(~WS_THICKFRAME),
 		CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight,
 		nullptr,
 		nullptr,
@@ -480,9 +481,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ShowWindow(hwnd, SW_NORMAL);
 	UpdateWindow(hwnd);
 
-	//create the player object and set the inital location 
 	
-	GameManger gM = GameManger(17);
+	
+	//GameManger gM = GameManger(17);
 	// Main message loop:  
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
