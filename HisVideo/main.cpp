@@ -2,25 +2,173 @@
 #include <vector>
 #include "Player.h"
 #include "BUllet.h"
-#include"Enemy.h"
+#include "resource1.h"
+#include <assert.h>
+#include "common.h"
 
 const wchar_t* szWindowClass = L"MyWindow";
-const int windowWidth = 800;
-const int windowHeight = 800;
-
 
 
 
 
 Player player;
+struct Color {
+	uint8_t b = 0;
+	uint8_t g = 0;
+	uint8_t r = 0;
+	uint8_t a = 0;
+
+	void set(uint8_t r_, uint8_t g_, uint8_t b_) {
+		r = r_;
+		g = g_;
+		b = b_;
+		a = 0;
+	}
+};
+
+
+
+class Enemy {
+public :
+	int x = 0;
+	int y = 0;
+
+	Enemy() {
+
+	}
+
+	bool active = false;
+
+	void init(int x_, int y_, bool active_) {
+		x = x_;
+		y = y_;
+		active = active_;
+	}
+};
+
+class BitMap {
+public:
+	BitMap()
+	{
+
+	}
+	~BitMap()
+	{
+		destroy();
+	}
+	BitMap(int resourceID)
+	{
+
+	}
+	void  create(int width, int height) {
+		//CreateBitmap(width, height, 1, 32);
+	}
+
+	void draw(HDC hdc, int x,int y ) {
+
+		if (!m_bmp || !hdc)
+		{
+			
+			return;
+		}
+		auto src = CreateCompatibleDC(hdc);
+		SelectObject(src, m_bmp);
+
+		BitBlt(hdc, x, y,width,height,src,0,0,SRCCOPY);
+		//StretchBlt(hdc, x, y, width, height, src, 0, 0, 50, 50, SRCCOPY);
+		DeleteDC(src);
+		
+	}
+
+	void LoadBitMap(int resourceID) {
+		destroy();
+
+		//TODO use the resourceID to access the corresponding bitmap
+		m_bmp = LoadBitmap(GetModuleHandle(nullptr), MAKEINTRESOURCE(resourceID));
+		if (!m_bmp) {
+			return;
+		}
+
+		BITMAP info;
+		GetObject(m_bmp, sizeof(info), &info);
+		width = info.bmWidth;
+		height = info.bmHeight;
+
+
+	}
+
+	void destroy() {
+		if (m_bmp) {
+			DeleteObject(m_bmp);
+			m_bmp = nullptr;
+			width = 0;
+			height = 0;
+		}
+	}
+
+
+private:
+	HBITMAP m_bmp = nullptr;
+	int width = 0;
+	int height = 0;
+	int resourceID;
+};
+
+BitMap bitMap;
+
+class EnemyController {
+public:
+	
+	
+	void create() {
+		Enemies.resize(numbersofRow*numbersofColume);
+
+		for (int i = 0; i < numbersofRow; i++)
+		{
+			
+			for (int j = 0; j < numbersofColume; j++)
+			{
+				Enemies[i*numbersofColume + j] = new Enemy();
+				Enemies[i*numbersofColume + j]->init(startX + j * vDistance, startY + i * hDistance, true);
+				
+				
+			}
+		}
+	}
+
+	void Onpaint(HDC hdc) {
+		
+		bitMap.LoadBitMap(IDB_BITMAP1);
+		for (int i =0;i<Enemies.size();i++)
+		{
+			if (Enemies[i]->active == false)
+			{
+				continue;
+			}
+			
+			bitMap.draw(hdc, Enemies[i]->x, Enemies[i]->y);
+			
+
+		}
+	}
+private:
+	std::vector<Enemy*>Enemies;
+	int vDistance = 80;
+	int hDistance = 80;
+
+	int startX = 50;
+	int startY = 50;
+
+	int numbersofRow = 5;
+	int numbersofColume = 5;
+};
+
 class GameManger {
 public:
-	int refreshTime = 17;
-	int currentTime=0;
-	int amountofEnemy = 20;
+	
 	//Player player;
 
-	std::vector<Enemy*> enemies;
+	
 	GameManger(int rT) {
 		refreshTime = rT;
 	}
@@ -40,26 +188,117 @@ public:
 	{
 
 	}
+private:
+	int refreshTime = 17;
+	int currentTime = 0;
+	int amountofEnemy = 20;
 };
+
+class BackBuffer {
+public:
+	BackBuffer(){}
+	~BackBuffer() {
+		destroy();
+	}
+
+	void create(HDC hdc,int width ,int height)
+	{
+		m_HDC = CreateCompatibleDC(hdc);
+		m_Bitmap = CreateCompatibleBitmap(m_HDC, width, height);
+
+		SelectObject(m_HDC, m_Bitmap);
+		RECT rc;
+		rc.left = 0;
+		rc.right = width;
+		rc.top = 0;
+		rc.bottom = height;
+
+		auto brush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+
+		FillRect(m_HDC, &rc, brush);
+
+		m_width = width;
+		m_height = height;
+	}
+
+	void draw(HDC hdc, int x, int y) {
+		if (!hdc || !m_Bitmap || !m_Bitmap)
+		{
+			return;
+		}
+		
+		BitBlt(hdc, x, y, m_width, m_height, m_HDC, 0, 0, SRCCOPY);
+	}
+	void destroy() {
+		if (m_Bitmap)
+		{
+			DeleteObject(m_Bitmap);
+			m_Bitmap = nullptr;
+		}
+
+		if (m_HDC) {
+
+			DeleteDC(m_HDC);
+			m_HDC = nullptr;
+		}
+		m_width = 0;
+		m_height = 0;
+	}
+
+	HDC getHDC() {
+		return m_HDC;
+	}
+
+
+private:
+	HDC m_HDC;
+	HBITMAP m_Bitmap;
+	int m_width = 0;
+	int m_height=0;
+};
+
+EnemyController eC;
+BackBuffer backbuffer;
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	//PAINTSTRUCT ps;
 	//BeginPaint(hWnd, &ps);
 	switch (message)
 	{
+
+	case WM_CREATE: {
+		
+		bitMap.LoadBitMap(IDB_BITMAP1);
+		eC.create();
+		RECT rc;
+		GetClientRect(hWnd, &rc);
+		auto dc = GetDC(hWnd);
+
+		backbuffer.create(dc, rc.right - rc.left, rc.bottom - rc.top);
+
+		//The main game loop and trying to go for 60fps
+		SetTimer(hWnd, NULL, 17, nullptr);
+	
+	}
 	case WM_PAINT: {
 
 		InvalidateRect(hWnd, nullptr, true);
 		PAINTSTRUCT ps;
 		BeginPaint(hWnd, &ps);
 
-		player.Onprint(0,0,ps);
+		//eC.Onpaint(ps.hdc);      put these two lines to WM_TImer and paint them to the backBuffer
+		//player.Onprint(0,0,ps);
+		backbuffer.draw(ps.hdc, 0,0);
 	
 		EndPaint(hWnd, &ps);
 		
 	}break;
 
 	case WM_DESTROY:
+		bitMap.destroy();
+		
+
 		PostQuitMessage(0);
 		return 0;
 	case WM_CLOSE: {
@@ -81,56 +320,66 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		rc->right = rc->left + 640;
 	}break;
 
-	case WM_RBUTTONDOWN: {
-		player.Fire();
-	}break;
+	
 
 	case WM_LBUTTONDOWN: {
 		
 
 		player.Fire();
-		printf("Left Button\n");
+		printf("player y position is %d", player.y);
 	
 	}break;
 
 	case WM_KEYDOWN: {
 		switch (wParam)
 		{
-		case VK_UP: {
+
+		//pressing W key 
+		case 0x57: {
 			PAINTSTRUCT ps;
 
 			BeginPaint(hWnd, &ps);
-			player.Onprint(0, -player.moveSpeed, ps);
+			player.Onprint(0, -player.moveSpeed, backbuffer.getHDC());
 			EndPaint(hWnd, &ps);
 		}break;
 
-		case VK_DOWN:{
+		//pressing s key
+		case 0x53:{
 			PAINTSTRUCT ps;
 
 			BeginPaint(hWnd, &ps);
-			player.Onprint(0, player.moveSpeed, ps);
+			player.Onprint(0, player.moveSpeed, backbuffer.getHDC());
 			EndPaint(hWnd, &ps);
 		}break;
 
-		case VK_LEFT: {
+		//pressing A key
+		case 0x41: {
 			PAINTSTRUCT ps;
 
 			BeginPaint(hWnd, &ps);
-			player.Onprint(-player.moveSpeed, 0, ps);
+			player.Onprint(-player.moveSpeed, 0, backbuffer.getHDC());
 			EndPaint(hWnd, &ps);
 		}break;
 
-		case VK_RIGHT: {
+		//pressing D key
+		case 0x44: {
 			PAINTSTRUCT ps;
 
 			BeginPaint(hWnd, &ps);
-			player.Onprint(player.moveSpeed,0, ps);
+			player.Onprint(player.moveSpeed,0, backbuffer.getHDC());
 			EndPaint(hWnd, &ps);
 		}break;
 		}
 	}break;
 	case WM_TIMER: {
-		InvalidateRect(hWnd, nullptr, false);
+		//paint things to the backbuffer
+	
+
+		eC.Onpaint(backbuffer.getHDC());     // put these two lines to WM_TImer and paint them to the backBuffer
+		player.Onprint(0,0,backbuffer.getHDC());
+		
+		//printf("player 's position is %d, and %d \n", player.x, player.y);
+		InvalidateRect(hWnd, nullptr, true);
 		
 	}
 	} // switch    
@@ -169,7 +418,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HWND hwnd = CreateWindowEx(0,
 		szWindowClass,
 		L"MyWindow Title",
-		WS_OVERLAPPEDWINDOW,
+		WS_OVERLAPPEDWINDOW&(~WS_MAXIMIZEBOX),
 		CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight,
 		nullptr,
 		nullptr,
@@ -179,7 +428,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ShowWindow(hwnd, SW_NORMAL);
 	UpdateWindow(hwnd);
 
-	player.create(400, 400, 100);
+	//create the player object and set the inital location 
+	player.create(300, 690, 100);
 	GameManger gM = GameManger(17);
 	// Main message loop:  
 	MSG msg;
@@ -187,7 +437,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
-		gM.Loop(hwnd);
+		//gM.Loop(hwnd);
 	}
 
 	return msg.wParam;

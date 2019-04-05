@@ -20,5 +20,5 @@ public:
 
 	void OverlapTest();
 
-	int Onprint(PAINTSTRUCT &ps, Player * player);
+	int Onprint(HDC hdc, Player * player);
 };

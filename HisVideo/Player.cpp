@@ -1,5 +1,6 @@
 #include "Player.h"
 #include"Bullet.h"
+#include"common.h"
 
 void Player::create(int x_, int y_, int hp_)
 {
@@ -32,22 +33,25 @@ void Player::Fire()
 		}
 	}
 	
-	printf("Leaving \n");
-
 
 }
 //Mx and My are the change of position of the player , eg if Mx  =1 then the player is moved to the right for one pixel
-void Player::Onprint(float Mx, float My, PAINTSTRUCT &ps)
+//TODO draw to backBuffer
+void Player::Onprint(float Mx, float My, HDC hdc)
 {	
-	if (x + Mx < 0 || y + My < 0)
+	if (x + Mx < 0 || y + My < 0 || (x+Mx+playerSize>=windowWidth))
 	{
-		return;
+		
 	}
-	x += Mx;
-	y += My;
 
-	SelectObject(ps.hdc, GetStockObject(GRAY_BRUSH));
-	Rectangle(ps.hdc, x , y , x + playerSize, y + playerSize);
+	else {
+		x += Mx;
+		y += My;
+	}
+
+
+	SelectObject(hdc, GetStockObject(GRAY_BRUSH));
+	Rectangle(hdc, x , y , x + playerSize, y + playerSize);
 	/*for (Bullet * bullet : FiredBullet)
 	{
 		if (!bullet) { break; }
@@ -62,7 +66,7 @@ void Player::Onprint(float Mx, float My, PAINTSTRUCT &ps)
 		}
 
 		int ans = -1;
-		ans = (*it)->Onprint(ps, this);
+		ans = (*it)->Onprint(hdc, this);
 		if(ans == 0){
 			currentBullet--;
 		}

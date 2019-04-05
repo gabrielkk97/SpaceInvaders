@@ -22,7 +22,8 @@ void Bullet::OverlapTest() {
 
 }
 
-int Bullet::Onprint(PAINTSTRUCT &ps, Player * player)
+//TODO draw to backBuffer
+int Bullet::Onprint(HDC hdc, Player * player)
 {
 	printf("DLLM\n");
 	y -= velcoity;
@@ -30,8 +31,8 @@ int Bullet::Onprint(PAINTSTRUCT &ps, Player * player)
 		active = false;
 		return 0;
 	}
-	SelectObject(ps.hdc, GetStockObject(GRAY_BRUSH));
-	Rectangle(ps.hdc, x, y, x +bulletSize, y + bulletSize);
-	TextOut(ps.hdc, 200,300,L"Fired", 5);
+	SelectObject(hdc, GetStockObject(GRAY_BRUSH));
+	Rectangle(hdc, x, y, x +bulletSize, y + bulletSize);
+	
 	return 1;
 }
