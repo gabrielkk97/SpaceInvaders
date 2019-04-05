@@ -74,26 +74,33 @@ private:
 class BitMap {
 public:
 	BitMap(){}
-	~BitMap(){destroy();}
+
+	~BitMap(){
+		destroy(); 
+		if (m_HDC) {
+			DeleteDC(m_HDC);
+		}
+	}
+
 	BitMap(int resourceID){}
 
-	void  create(int width, int height) {
-		//CreateBitmap(width, height, 1, 32);
+	void CreateHDC(HDC hdc) {
+		m_HDC = CreateCompatibleDC(hdc);
+		SelectObject(m_HDC, m_bmp);
 	}
 
 	void draw(HDC hdc, int x,int y ) {
 
-		if (!m_bmp || !hdc)
+		if (!m_bmp )
 		{
-			
 			return;
 		}
-		auto src = CreateCompatibleDC(hdc);
-		SelectObject(src, m_bmp);
-
-		BitBlt(hdc, x, y,width,height,src,0,0,SRCCOPY);
-		
-		DeleteDC(src);
+		if (!hdc) {
+			m_HDC = CreateCompatibleDC(hdc);
+			SelectObject(m_HDC, m_bmp);
+		}
+	
+		BitBlt(hdc, x, y,width,height,m_HDC,0,0,SRCCOPY);
 		
 	}
 
@@ -129,6 +136,7 @@ public:
 
 private:
 	HBITMAP m_bmp = nullptr;
+	HDC m_HDC;
 	int width = 0;
 	int height = 0;
 	int resourceID;
@@ -139,7 +147,14 @@ private:
 class EnemyController {
 public:
 	
-	
+	~EnemyController(){
+		for (int i = 0; i < Enemies.size();i++) {
+			if (Enemies[i]) {
+				delete Enemies[i];
+			}
+		}
+		Enemies.clear();
+	}
 	void create() {
 		Enemies.resize(numbersofRow*numbersofColume);
 
@@ -165,6 +180,10 @@ public:
 		printf("the width is %d and height is %d \n", Bit_width, Bit_height);
 	}
 
+	void CreateHDC(HDC hdc)
+	{
+		m_bitmap.CreateHDC(hdc);
+	}
 	void Onpaint(HDC hdc) {
 		
 		
@@ -359,17 +378,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 
 	case WM_CREATE: {
-		
+		PAINTSTRUCT ps;
+		BeginPaint(hWnd, &ps);
 		
 		eC.LoadBitMap(IDB_BITMAP1);
 		eC.create();
+		eC.CreateHDC(ps.hdc);
 		player.create(300, 690, 100);
 		
 
 		//The main game loop and trying to go for 60fps
-		SetTimer(hWnd, NULL, 17, nullptr);
+		SetTimer(hWnd, NULL, TIMER_INTERVAL_MS, nullptr);
 
-		
+		EndPaint(hWnd, &ps);
 	}
 	case WM_PAINT: {
 
@@ -389,7 +410,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		
 		
-
 		PostQuitMessage(0);
 		return 0;
 	case WM_CLOSE: {
