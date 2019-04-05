@@ -23,7 +23,7 @@ void Player::Fire()
 
 		//set the position of the bullet to the middle of the player 
 		FiredBullet[currentNode]->initialize(x+playerSize/2-Bullet::bulletSize/2, y -10);
-		FiredBullet[currentNode]->active = true;
+		FiredBullet[currentNode]->setActive(true);
 
 		currentBullet++;
 
@@ -59,13 +59,16 @@ void Player::Onprint(float Mx, float My, HDC hdc)
 
 	for (std::vector<Bullet*>::iterator it = FiredBullet.begin(); it != FiredBullet.end(); it++)
 	{	
-		if ((*it)->active == false)
+		if ((*it)->getActive() == false)
 		{
 			continue;
 		}
 
 		int ans = -1;
+
 		ans = (*it)->Onprint(hdc, this);
+
+		//if bullet went out of window , minus currentBullet number
 		if(ans == 0){
 			currentBullet--;
 		}
@@ -79,9 +82,44 @@ void Player::Onprint(float Mx, float My, HDC hdc)
 }
 
 int Player::getMX() const{ return ModX; }
+
 int Player::getMy() const{ return ModY; }
+
+int Player::getCurrentBullet() const
+{
+	return currentBullet;
+}
+
+
+
+void Player::setX(int x_)
+{
+	x = x_;
+}
+
+void Player::setY(int y_)
+{
+	y = y_;
+}
+
+int Player::getX() const
+{
+	return x;
+}
+
+int Player::getY() const
+{
+	return y;
+}
+
+
 
 void Player::setMod(int x_, int y_) {
 	ModX = x_;
 	ModY = y_;
+}
+
+void Player::setCurrentBullet(int number)
+{
+	currentBullet += number;
 }

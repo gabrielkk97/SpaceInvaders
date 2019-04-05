@@ -38,11 +38,11 @@ struct Color {
 
 class Enemy {
 public :
-	int x = 0;
-	int y = 0;
+
 
 	Enemy() {
-
+		x = 0;
+		y = 0;
 	}
 
 	bool active = false;
@@ -52,6 +52,26 @@ public :
 		y = y_;
 		active = active_;
 	}
+
+	void setX(int x_) {
+		x = x_;
+	}
+
+	void setY(int y_) {
+		y = y_;
+	}
+
+	int getX()const {
+		return x;
+	}
+
+	int getY()const {
+		return y;
+	}
+
+private:
+	int x;
+	int y;
 };
 
 class BitMap {
@@ -83,7 +103,7 @@ public:
 		SelectObject(src, m_bmp);
 
 		BitBlt(hdc, x, y,width,height,src,0,0,SRCCOPY);
-		//StretchBlt(hdc, x, y, width, height, src, 0, 0, 50, 50, SRCCOPY);
+		
 		DeleteDC(src);
 		
 	}
@@ -91,7 +111,7 @@ public:
 	void LoadBitMap(int resourceID) {
 		destroy();
 
-		//TODO use the resourceID to access the corresponding bitmap
+		
 		m_bmp = LoadBitmap(GetModuleHandle(nullptr), MAKEINTRESOURCE(resourceID));
 		if (!m_bmp) {
 			return;
@@ -156,23 +176,28 @@ public:
 			}
 			
 			for (int j = 0; j < player.FiredBullet.size(); j++) {
-				if (!player.FiredBullet[j]->active)
+				if (!(player.FiredBullet[j]->getActive()))
 				{
 					continue;
 				}
-				bool ifHit = OverlapTest(Enemies[i]->x, player.FiredBullet[j]->x, Enemies[i]->x + 50, player.FiredBullet[j]->x + player.FiredBullet[j]->bulletSize, Enemies[i]->y, \
-					player.FiredBullet[j]->y, Enemies[i]->y + 36, player.FiredBullet[j]->y + player.FiredBullet[j]->bulletSize);
+
+				//TODO refactor
+				bool ifHit = OverlapTest(Enemies[i]->getX(), player.FiredBullet[j]->getX(), Enemies[i]->getX() + 50, player.FiredBullet[j]->getX() + player.FiredBullet[j]->bulletSize, Enemies[i]->getY(), \
+					player.FiredBullet[j]->getY(), Enemies[i]->getY() + 36, player.FiredBullet[j]->getY() + player.FiredBullet[j]->bulletSize);
 
 				if (ifHit)
 				{
 					
-					player.FiredBullet[j]->active = false;
+					//TODO refactor
+					//player.FiredBullet[j]->active = false;
+					player.FiredBullet[j]->setActive(false);
+
 					Enemies[i]->active = false;
-					player.currentBullet--;
+					player.setCurrentBullet(-1);
 				}
 			}
 
-			bitMap.draw(hdc, Enemies[i]->x, Enemies[i]->y);
+			bitMap.draw(hdc, Enemies[i]->getX(), Enemies[i]->getY());
 			
 
 		}
