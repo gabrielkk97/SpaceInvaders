@@ -242,7 +242,7 @@ public:
 
 
 private:
-	std::vector<Enemy*>Enemies;
+	std::vector<Enemy*> Enemies;
 	int vDistance = 80;
 	int hDistance = 80;
 
