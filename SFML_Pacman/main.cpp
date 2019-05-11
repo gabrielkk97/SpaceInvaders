@@ -43,9 +43,11 @@ int main()
 	Texture t1 , t2,t3;
 	t1.loadFromFile("images/tiles.png");
 	t2.loadFromFile("images/background.png");
+	t3.loadFromFile("iamges/frame.png");
 
 	Sprite s(t1);
 	Sprite background(t2);
+	Sprite frame(t3);
 
 	int dx = 0; int colorNum = 1;
 	float timer = 0, delay = 0.3;
@@ -127,12 +129,15 @@ int main()
 		dx = 0; rotate = 0; delay = 0.3;
 		////draw////
 		window.clear(Color::White);
+		window.draw(background);
 
 		for (int i = 0; i < M; i++) {
 			for (int j = 0; j < N; j++) {
 				if (field[i][j] == 0) continue;
 				s.setTextureRect(IntRect(field[i][j] * 18, 0, 18, 18));
 				s.setPosition(j * 18, i * 18);
+
+				s.move(28, 31); // offset to fit the bricks inside the background png 
 				window.draw(s);
 			}
 		}
@@ -140,9 +145,12 @@ int main()
 		for (int i = 0; i < 4; i++) {
 			s.setTextureRect(IntRect(colorNum * 18, 0, 18, 18));
 			s.setPosition(a[i].x*18, a[i].y*18);
+
+			s.move(28, 31);//// offset to fit the bricks inside the background png 
 			window.draw(s);
 		}
-	
+		
+		window.draw(frame); // draw the frame at last as sfml will stack the images base on the order of drawing
 		window.display();
 	}
 
